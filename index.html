@@ -55,15 +55,15 @@
 
         ::view-transition-old(root),
         ::view-transition-new(root) {
-            animation-duration: 0.4s;
-            animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            animation-duration: 0.5s;
+            animation-timing-function: cubic-bezier(0.25, 1, 0.5, 1);
         }
 
         ::view-transition-group(morph-img),
         ::view-transition-group(morph-title),
         ::view-transition-group(morph-artist) {
-            animation-duration: 0.55s;
-            animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+            animation-duration: 0.8s;
+            animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1); /* iOS 般丝滑非线性缓动 */
         }
 
         ::view-transition-old(morph-title),
@@ -72,6 +72,17 @@
         ::view-transition-new(morph-artist) {
             height: 100%;
             width: 100%;
+        }
+
+        /* 新增：iOS风格全局缩放动画专属过渡组 */
+        ::view-transition-group(morph-app-to-icon) {
+            animation-duration: 0.8s;
+            animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        ::view-transition-old(morph-app-to-icon),
+        ::view-transition-new(morph-app-to-icon) {
+            object-fit: cover; /* 保证快照在比例变化时不被拉伸变形 */
+            border-radius: inherit;
         }
 
         .safe-top { padding-top: max(1.5rem, env(safe-area-inset-top)); }
@@ -85,19 +96,45 @@
         }
 
         .backdrop-transition-slow {
-            transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), backdrop-filter 0.4s cubic-bezier(0.4, 0, 0.2, 1), -webkit-backdrop-filter 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: background-color 0.8s cubic-bezier(0.16, 1, 0.3, 1), backdrop-filter 0.8s cubic-bezier(0.16, 1, 0.3, 1), -webkit-backdrop-filter 0.8s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .backdrop-transition-fast {
             transition: background-color 0.1s ease-out, backdrop-filter 0.1s ease-out, -webkit-backdrop-filter 0.1s ease-out;
             will-change: background-color, backdrop-filter;
         }
+
+        /* 替换原有呼吸动画为：自定义平滑透明度过渡关键帧，解决默认交叉溶解过快导致的突兀感 */
+        @keyframes smooth-fade-in {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes smooth-fade-out {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        ::view-transition-old(morph-img),
+        ::view-transition-old(morph-title),
+        ::view-transition-old(morph-artist),
+        ::view-transition-old(morph-app-to-icon) {
+            /* 强制旧画面的渐隐时间、曲线与飞行轨道完全一致 */
+            animation: smooth-fade-out 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        ::view-transition-new(morph-img),
+        ::view-transition-new(morph-title),
+        ::view-transition-new(morph-artist),
+        ::view-transition-new(morph-app-to-icon) {
+            /* 强制新画面的渐显时间、曲线与飞行轨道完全一致 */
+            animation: smooth-fade-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
     </style>
 </head>
 <body class="min-h-screen relative">
 
     <!-- ==================== 视图 1: 首页 ==================== -->
-    <div id="home-view" class="pb-24 sm:pb-32 transition-opacity duration-300 safe-top">
+    <div id="home-view" class="pb-24 sm:pb-32 transition-opacity duration-500 ease-out safe-top">
         <header class="flex flex-col items-center mt-6 md:mt-10 mb-8 px-4 text-center">
             <div class="bg-white rounded-full px-6 py-2.5 sm:px-8 sm:py-3 pill-shadow mb-4 flex items-center justify-center">
                 <h1 class="text-lg sm:text-xl md:text-2xl font-black tracking-widest text-black">[ btm_m ] WEEKLY</h1>
@@ -140,7 +177,7 @@
     </div>
 
     <!-- ==================== 视图 2: 详情页 ==================== -->
-    <div id="detail-view" class="fixed inset-0 z-50 hidden opacity-0 transition-opacity duration-300 touch-none">
+    <div id="detail-view" class="fixed inset-0 z-50 hidden opacity-0 transition-opacity duration-500 ease-out touch-none">
         
         <div id="detail-backdrop" class="absolute inset-0 backdrop-transition-slow" style="background-color: rgba(0,0,0,0); backdrop-filter: blur(0px); -webkit-backdrop-filter: blur(0px);"></div>
 
@@ -215,17 +252,28 @@
     </div>
 
     <!-- ==================== 视图 3: 实验性菜单弹窗 ==================== -->
-    <div id="experimental-menu" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 backdrop-blur-sm opacity-0 transition-opacity duration-300">
-        <div class="bg-white rounded-[2rem] p-8 max-w-sm w-full mx-4 shadow-2xl transform scale-95 transition-transform duration-300" id="experimental-modal">
+    <div id="experimental-menu" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 backdrop-blur-sm opacity-0 transition-opacity duration-500 ease-out">
+        <div class="bg-white rounded-[2rem] p-8 max-w-sm w-full mx-4 shadow-2xl transform scale-95 transition-transform duration-500 ease-out" id="experimental-modal">
             <h3 class="text-2xl font-black mb-6 text-black tracking-tight">实验性菜单</h3>
             
-            <div class="flex items-center justify-between mb-8">
+            <div class="flex items-center justify-between mb-6">
                 <div class="pr-4">
                     <div class="font-bold text-gray-800 text-lg">预测性返回动画</div>
                     <div class="text-xs text-gray-500 mt-1 leading-relaxed">鼠标靠近返回按钮，或在屏幕竖向中部的区域向右滑动时，触发预测性返回预示。</div>
                 </div>
                 <label class="relative inline-flex items-center cursor-pointer shrink-0">
                     <input type="checkbox" id="predictive-toggle" class="sr-only peer" onchange="togglePredictive(this)">
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
+                </label>
+            </div>
+
+            <div class="flex items-center justify-between mb-8">
+                <div class="pr-4">
+                    <div class="font-bold text-gray-800 text-lg">iOS 缩放过渡</div>
+                    <div class="text-xs text-gray-500 mt-1 leading-relaxed">进出详情页时，整个页面如 iOS 应用般缩放为圆角卡片，飞向/飞出列表原封面位置。</div>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                    <input type="checkbox" id="ios-scale-toggle" class="sr-only peer" onchange="toggleIosScale(this)">
                     <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
                 </label>
             </div>
@@ -262,6 +310,7 @@
         let activeSourceElement = null; 
         let activeSourceIndex = -1;     
         let predictiveBackEnabled = false;
+        let iosScaleEnabled = false; // 新增：iOS风格缩放开关
 
         // 全局：用于桌面端解决抖动的锁定标识
         let isWrapperScaled = false;
@@ -354,26 +403,41 @@
                 let sourceTitle = element ? element.querySelector('.title-text') : null;
                 let sourceArtist = element ? element.querySelector('.artist-text') : null;
 
-                if(sourceImg) sourceImg.style.viewTransitionName = 'morph-img';
-                if(sourceTitle) sourceTitle.style.viewTransitionName = 'morph-title';
-                if(sourceArtist) sourceArtist.style.viewTransitionName = 'morph-artist';
+                // 判断开启了哪种风格的过渡动画
+                if (iosScaleEnabled) {
+                    if(sourceImg) sourceImg.style.viewTransitionName = 'morph-app-to-icon';
+                } else {
+                    if(sourceImg) sourceImg.style.viewTransitionName = 'morph-img';
+                    if(sourceTitle) sourceTitle.style.viewTransitionName = 'morph-title';
+                    if(sourceArtist) sourceArtist.style.viewTransitionName = 'morph-artist';
+                }
 
                 const transition = document.startViewTransition(() => {
-                    if(sourceImg) sourceImg.style.viewTransitionName = '';
-                    if(sourceTitle) sourceTitle.style.viewTransitionName = '';
-                    if(sourceArtist) sourceArtist.style.viewTransitionName = '';
+                    if (iosScaleEnabled) {
+                        if(sourceImg) sourceImg.style.viewTransitionName = '';
+                        // 让整个详情页 Wrapper 接收放大动画
+                        document.getElementById('detail-wrapper').style.viewTransitionName = 'morph-app-to-icon';
+                    } else {
+                        if(sourceImg) sourceImg.style.viewTransitionName = '';
+                        if(sourceTitle) sourceTitle.style.viewTransitionName = '';
+                        if(sourceArtist) sourceArtist.style.viewTransitionName = '';
 
-                    document.getElementById('detail-card-bg').style.viewTransitionName = 'morph-img';
-                    document.getElementById('detail-title').style.viewTransitionName = 'morph-title';
-                    document.getElementById('detail-artist').style.viewTransitionName = 'morph-artist';
+                        document.getElementById('detail-card-bg').style.viewTransitionName = 'morph-img';
+                        document.getElementById('detail-title').style.viewTransitionName = 'morph-title';
+                        document.getElementById('detail-artist').style.viewTransitionName = 'morph-artist';
+                    }
 
                     performUpdate();
                 });
                 
                 transition.finished.then(() => {
-                    document.getElementById('detail-card-bg').style.viewTransitionName = '';
-                    document.getElementById('detail-title').style.viewTransitionName = '';
-                    document.getElementById('detail-artist').style.viewTransitionName = '';
+                    if (iosScaleEnabled) {
+                        document.getElementById('detail-wrapper').style.viewTransitionName = '';
+                    } else {
+                        document.getElementById('detail-card-bg').style.viewTransitionName = '';
+                        document.getElementById('detail-title').style.viewTransitionName = '';
+                        document.getElementById('detail-artist').style.viewTransitionName = '';
+                    }
                 });
             } else {
                 performUpdate();
@@ -406,14 +470,23 @@
             };
 
             if (document.startViewTransition) {
-                document.getElementById('detail-card-bg').style.viewTransitionName = 'morph-img';
-                document.getElementById('detail-title').style.viewTransitionName = 'morph-title';
-                document.getElementById('detail-artist').style.viewTransitionName = 'morph-artist';
+                if (iosScaleEnabled) {
+                    // 整个页面作为动画的起点
+                    document.getElementById('detail-wrapper').style.viewTransitionName = 'morph-app-to-icon';
+                } else {
+                    document.getElementById('detail-card-bg').style.viewTransitionName = 'morph-img';
+                    document.getElementById('detail-title').style.viewTransitionName = 'morph-title';
+                    document.getElementById('detail-artist').style.viewTransitionName = 'morph-artist';
+                }
 
                 const transition = document.startViewTransition(() => {
-                    document.getElementById('detail-card-bg').style.viewTransitionName = '';
-                    document.getElementById('detail-title').style.viewTransitionName = '';
-                    document.getElementById('detail-artist').style.viewTransitionName = '';
+                    if (iosScaleEnabled) {
+                        document.getElementById('detail-wrapper').style.viewTransitionName = '';
+                    } else {
+                        document.getElementById('detail-card-bg').style.viewTransitionName = '';
+                        document.getElementById('detail-title').style.viewTransitionName = '';
+                        document.getElementById('detail-artist').style.viewTransitionName = '';
+                    }
 
                     const targetElement = (currentIndex === activeSourceIndex && activeSourceElement) 
                         ? activeSourceElement 
@@ -423,9 +496,14 @@
                     let targetTitle = targetElement ? targetElement.querySelector('.title-text') : null;
                     let targetArtist = targetElement ? targetElement.querySelector('.artist-text') : null;
 
-                    if(targetImg) targetImg.style.viewTransitionName = 'morph-img';
-                    if(targetTitle) targetTitle.style.viewTransitionName = 'morph-title';
-                    if(targetArtist) targetArtist.style.viewTransitionName = 'morph-artist';
+                    if (iosScaleEnabled) {
+                        // 缩小回对应的那个头像内
+                        if(targetImg) targetImg.style.viewTransitionName = 'morph-app-to-icon';
+                    } else {
+                        if(targetImg) targetImg.style.viewTransitionName = 'morph-img';
+                        if(targetTitle) targetTitle.style.viewTransitionName = 'morph-title';
+                        if(targetArtist) targetArtist.style.viewTransitionName = 'morph-artist';
+                    }
 
                     performUpdate();
                 });
@@ -438,15 +516,19 @@
                     let targetTitle = targetElement ? targetElement.querySelector('.title-text') : null;
                     let targetArtist = targetElement ? targetElement.querySelector('.artist-text') : null;
 
-                    if(targetImg) targetImg.style.viewTransitionName = '';
-                    if(targetTitle) targetTitle.style.viewTransitionName = '';
-                    if(targetArtist) targetArtist.style.viewTransitionName = '';
+                    if (iosScaleEnabled) {
+                        if(targetImg) targetImg.style.viewTransitionName = '';
+                    } else {
+                        if(targetImg) targetImg.style.viewTransitionName = '';
+                        if(targetTitle) targetTitle.style.viewTransitionName = '';
+                        if(targetArtist) targetArtist.style.viewTransitionName = '';
+                    }
                 });
             } else {
                 detailView.classList.add('opacity-0');
                 setTimeout(() => {
                     performUpdate();
-                }, 300);
+                }, 500);
             }
         }
 
@@ -532,7 +614,7 @@
                     backdrop.classList.remove('backdrop-transition-slow');
                     backdrop.classList.add('backdrop-transition-fast');
 
-                    wrapper.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), border-radius 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)';
+                    wrapper.style.transition = 'transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), border-radius 0.8s cubic-bezier(0.16, 1, 0.3, 1)';
                     wrapper.style.transform = `scale(1)`;
                     wrapper.style.borderRadius = `0`;
                     
@@ -577,11 +659,16 @@
             setTimeout(() => {
                 menu.classList.add('hidden');
                 menu.classList.remove('flex');
-            }, 300);
+            }, 500);
         }
 
         function togglePredictive(checkbox) {
             predictiveBackEnabled = checkbox.checked;
+        }
+
+        // 新增：iOS 缩放风格开关逻辑
+        function toggleIosScale(checkbox) {
+            iosScaleEnabled = checkbox.checked;
         }
 
         // ================= 移动端中部向右滑动预测性返回逻辑 =================
@@ -660,7 +747,7 @@
                 wrapperNode.style.transition = 'none';
                 closeDetail();
             } else {
-                wrapperNode.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), border-radius 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)';
+                wrapperNode.style.transition = 'transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), border-radius 0.8s cubic-bezier(0.16, 1, 0.3, 1)';
                 wrapperNode.style.transform = `scale(1) translateX(0)`;
                 wrapperNode.style.borderRadius = `0`;
                 backdropNode.style.backgroundColor = 'rgba(0, 0, 0, 0.6)';
