@@ -15,6 +15,13 @@
         :root {
             --bg-color: #f2f2f6;
         }
+        
+        /* 修复电脑端滚动条显隐导致的窗口闪跳/抽搐现象 */
+        html, body {
+            scrollbar-width: none; /* 彻底隐藏 Firefox 滚动条 */
+            -ms-overflow-style: none; /* 彻底隐藏 IE/Edge 滚动条 */
+        }
+        
         body {
             font-family: 'Google Sans', 'Inter', 'MiSans', 'Noto Sans SC', 'LINE Seed JP', 'Noto Sans JP', sans-serif;
             background-color: var(--bg-color);
@@ -39,7 +46,12 @@
             background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.1) 100%);
         }
 
-        ::-webkit-scrollbar { width: 0px; background: transparent; }
+        /* 隐藏 WebKit 浏览器的滚动条 */
+        ::-webkit-scrollbar { 
+            display: none;
+            width: 0px; 
+            background: transparent; 
+        }
 
         ::view-transition-old(root),
         ::view-transition-new(root) {
@@ -67,8 +79,9 @@
         .bottom-safe-position { bottom: max(1.5rem, env(safe-area-inset-bottom)); }
 
         #detail-wrapper {
-            transition: transform 0.1s ease-out, border-radius 0.1s ease-out;
+            /* 移除了固定的 CSS 过渡，彻底避免与 JS 高频 mousemove 事件产生冲突导致画面抽搐 */
             will-change: transform, border-radius;
+            transform-origin: center;
         }
 
         .backdrop-transition-slow {
@@ -250,6 +263,11 @@
         let activeSourceIndex = -1;     
         let predictiveBackEnabled = false;
 
+        // 全局：用于桌面端解决抖动的锁定标识
+        let isWrapperScaled = false;
+        let cachedBtnX = null;
+        let cachedBtnY = null;
+
         function initRender() {
             const top5List = document.getElementById('top5-list');
             tracks.slice(0, 5).forEach((track, index) => {
@@ -310,6 +328,11 @@
             const detailView = document.getElementById('detail-view');
             const backdrop = document.getElementById('detail-backdrop');
 
+            // 每次打开详情页重置标识，以确保动画坐标重新获取
+            isWrapperScaled = false;
+            cachedBtnX = null;
+            cachedBtnY = null;
+
             const performUpdate = () => {
                 updateDetailContent();
                 document.body.style.overflow = 'hidden'; 
@@ -362,17 +385,22 @@
             const backdrop = document.getElementById('detail-backdrop');
             const wrapper = document.getElementById('detail-wrapper');
 
+            wrapper.style.transition = 'none';
+
             backdrop.classList.remove('backdrop-transition-fast');
             backdrop.classList.add('backdrop-transition-slow');
             backdrop.style.backgroundColor = 'rgba(0, 0, 0, 0)';
             backdrop.style.backdropFilter = 'blur(0px)';
             backdrop.style.webkitBackdropFilter = 'blur(0px)';
 
+            // 重置状态
+            isWrapperScaled = false;
+
             const performUpdate = () => {
                 detailView.classList.add('hidden');
                 document.body.style.overflow = ''; 
 
-                // 在截取了旧状态的视图快照之后再重置内部样式，这样无缝动画起点就是准确缩小的残影位置
+                wrapper.style.transition = 'none';
                 wrapper.style.transform = `scale(1) translateX(0)`;
                 wrapper.style.borderRadius = `0`;
             };
@@ -442,26 +470,45 @@
             else update();
         }
 
+        // 窗口尺寸改变时，清空坐标缓存，以便重新准确抓取返回按钮位置
+        window.addEventListener('resize', () => {
+            cachedBtnX = null;
+            cachedBtnY = null;
+        });
+
         // 桌面端：鼠标移动预测性返回动画
         document.addEventListener('mousemove', (e) => {
             const detailView = document.getElementById('detail-view');
-            if (!predictiveBackEnabled || detailView.classList.contains('hidden')) return;
+            if (!predictiveBackEnabled || detailView.classList.contains('hidden')) {
+                isWrapperScaled = false;
+                return;
+            }
 
             const btn = document.getElementById('back-btn');
             const wrapper = document.getElementById('detail-wrapper');
             const backdrop = document.getElementById('detail-backdrop');
             if (!btn || !wrapper || !backdrop) return;
 
-            const rect = btn.getBoundingClientRect();
-            const btnX = rect.left + rect.width / 2;
-            const btnY = rect.top + rect.height / 2;
+            // 【核心修复】：
+            // 当卡片未变形（100%大小）时，获取按钮“真实的绝对坐标”并缓存。
+            // 当卡片开始变形缩小时，不再重新获取按钮坐标（因为缩小后按钮向中心移动了），
+            // 直接以“缓存坐标”计算距离，彻底消灭“计算距离变大 -> 停止缩小 -> 按钮复位 -> 触发缩小”的死循环抽搐！
+            if (!isWrapperScaled || !cachedBtnX) {
+                const rect = btn.getBoundingClientRect();
+                cachedBtnX = rect.left + rect.width / 2;
+                cachedBtnY = rect.top + rect.height / 2;
+            }
 
-            const dist = Math.hypot(e.clientX - btnX, e.clientY - btnY);
+            const dist = Math.hypot(e.clientX - cachedBtnX, e.clientY - cachedBtnY);
             const maxDist = 120; 
 
             if (dist < maxDist) {
+                isWrapperScaled = true;
+
                 backdrop.classList.remove('backdrop-transition-slow');
                 backdrop.classList.add('backdrop-transition-fast');
+                
+                wrapper.style.transition = 'none'; 
 
                 const progress = 1 - (dist / maxDist);
                 const easeProgress = Math.pow(progress, 1.5); 
@@ -478,10 +525,14 @@
                 backdrop.style.backdropFilter = `blur(${currentBlur}px)`;
                 backdrop.style.webkitBackdropFilter = `blur(${currentBlur}px)`;
             } else {
-                if (wrapper.style.transform !== 'scale(1)') {
+                // 如果已经超出了120px，且当前是被缩放的状态，就恢复它
+                if (isWrapperScaled) {
+                    isWrapperScaled = false;
+
                     backdrop.classList.remove('backdrop-transition-slow');
                     backdrop.classList.add('backdrop-transition-fast');
 
+                    wrapper.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), border-radius 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)';
                     wrapper.style.transform = `scale(1)`;
                     wrapper.style.borderRadius = `0`;
                     
@@ -544,8 +595,8 @@
         const backdropNode = document.getElementById('detail-backdrop');
 
         detailViewNode.addEventListener('touchstart', e => {
-            touchStartX = e.changedTouches[0].screenX;
-            touchStartY = e.changedTouches[0].screenY;
+            touchStartX = e.changedTouches[0].clientX;
+            touchStartY = e.changedTouches[0].clientY;
             isPredictiveSwiping = false;
             gestureDetermined = false;
         }, { passive: true });
@@ -553,20 +604,17 @@
         detailViewNode.addEventListener('touchmove', e => {
             if (!predictiveBackEnabled) return;
 
-            const currentX = e.changedTouches[0].screenX;
-            const currentY = e.changedTouches[0].screenY;
+            const currentX = e.changedTouches[0].clientX;
+            const currentY = e.changedTouches[0].clientY;
             const diffX = currentX - touchStartX;
             const diffY = currentY - touchStartY;
 
             if (!gestureDetermined) {
-                // 滑动超过 10px 开始判定意图
                 if (Math.abs(diffX) > 10 || Math.abs(diffY) > 10) {
                     gestureDetermined = true;
-                    // 判断起点是否在屏幕竖向中部 (约 15% ~ 85% 区域)
                     const windowHeight = window.innerHeight;
-                    const inVerticalMiddle = touchStartY > windowHeight * 0.15 && touchStartY < windowHeight * 0.85;
+                    const inVerticalMiddle = touchStartY > windowHeight * 0.10 && touchStartY < windowHeight * 0.90;
 
-                    // 向右滑动为主，且起点在中部区域
                     if (diffX > 10 && Math.abs(diffX) > Math.abs(diffY) && inVerticalMiddle) {
                         isPredictiveSwiping = true;
                         wrapperNode.style.transition = 'none'; 
@@ -578,7 +626,7 @@
             
             if (!isPredictiveSwiping) return;
             
-            if (diffX < 0) return; // 预测性返回只响应向右拖拽
+            if (diffX < 0) return; 
             
             const maxDrag = window.innerWidth;
             let progress = diffX / maxDrag;
@@ -603,19 +651,16 @@
             if (!isPredictiveSwiping) return;
             
             isPredictiveSwiping = false;
-            const touchEndX = e.changedTouches[0].screenX;
+            const touchEndX = e.changedTouches[0].clientX;
             const diffX = touchEndX - touchStartX;
             
-            // 恢复平滑回弹的过渡效果
-            wrapperNode.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), border-radius 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)';
             const closeThreshold = window.innerWidth * 0.25 > 100 ? 100 : window.innerWidth * 0.25;
 
             if (diffX > closeThreshold) {
-                // 将残留的形变样式保留给 View Transitions 捕获
                 wrapperNode.style.transition = 'none';
                 closeDetail();
             } else {
-                // 没有达到返回阈值，弹簧回位
+                wrapperNode.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), border-radius 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)';
                 wrapperNode.style.transform = `scale(1) translateX(0)`;
                 wrapperNode.style.borderRadius = `0`;
                 backdropNode.style.backgroundColor = 'rgba(0, 0, 0, 0.6)';
