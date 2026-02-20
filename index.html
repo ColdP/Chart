@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>[ btm_m ] WEEKLY - WEEK 8</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Noto+Sans+JP:wght@400;500;700;800;900&family=Noto+Sans+SC:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        :root {
+            --bg-color: #f2f2f6;
+        }
+        body {
+            font-family: 'Google Sans', 'Inter', 'MiSans', 'Noto Sans SC', 'LINE Seed JP', 'Noto Sans JP', sans-serif;
+            background-color: var(--bg-color);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            color: #1c1c1e;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent; 
+        }
+        
+        .pill-shadow { box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04); }
+        .card-shadow { box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05); }
+        .detail-shadow { box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3); }
+
+        .font-number {
+            font-weight: 900;
+            letter-spacing: -0.02em;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .glass-overlay {
+            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.1) 100%);
+        }
+
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+
+        ::view-transition-old(root),
+        ::view-transition-new(root) {
+            animation-duration: 0.4s;
+            animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        ::view-transition-group(morph-img),
+        ::view-transition-group(morph-title),
+        ::view-transition-group(morph-artist) {
+            animation-duration: 0.55s;
+            animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        ::view-transition-old(morph-title),
+        ::view-transition-new(morph-title),
+        ::view-transition-old(morph-artist),
+        ::view-transition-new(morph-artist) {
+            height: 100%;
+            width: 100%;
+        }
+
+        .safe-top { padding-top: max(1.5rem, env(safe-area-inset-top)); }
+        .safe-bottom { padding-bottom: max(1.5rem, env(safe-area-inset-bottom)); }
+        .bottom-safe-position { bottom: max(1.5rem, env(safe-area-inset-bottom)); }
+
+        #detail-wrapper {
+            transition: transform 0.1s ease-out, border-radius 0.1s ease-out;
+            will-change: transform, border-radius;
+        }
+
+        .backdrop-transition-slow {
+            transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), backdrop-filter 0.4s cubic-bezier(0.4, 0, 0.2, 1), -webkit-backdrop-filter 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .backdrop-transition-fast {
+            transition: background-color 0.1s ease-out, backdrop-filter 0.1s ease-out, -webkit-backdrop-filter 0.1s ease-out;
+            will-change: background-color, backdrop-filter;
+        }
+    </style>
+</head>
+<body class="min-h-screen relative">
+
+    <!-- ==================== 视图 1: 首页 ==================== -->
+    <div id="home-view" class="pb-24 sm:pb-32 transition-opacity duration-300 safe-top">
+        <header class="flex flex-col items-center mt-6 md:mt-10 mb-8 px-4 text-center">
+            <div class="bg-white rounded-full px-6 py-2.5 sm:px-8 sm:py-3 pill-shadow mb-4 flex items-center justify-center">
+                <h1 class="text-lg sm:text-xl md:text-2xl font-black tracking-widest text-black">[ btm_m ] WEEKLY</h1>
+            </div>
+        </header>
+
+        <main class="max-w-[1000px] mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-8 mb-8 md:mb-10">
+                <div id="secret-trigger" class="rounded-[2rem] md:rounded-[2.5rem] overflow-hidden card-shadow bg-white aspect-square relative group active:scale-[0.98] transition-transform duration-200 cursor-pointer" title="连点5次开启隐藏菜单">
+                    <img src="https://chart.btm-m.site/images/music26.jpg" alt="音乐回忆 26" class="absolute inset-0 w-full h-full object-cover md:transition-transform md:duration-700 md:group-hover:scale-105">
+                </div>
+
+                <div class="rounded-[2rem] md:rounded-[2.5rem] bg-white p-5 sm:p-8 card-shadow flex flex-col relative overflow-hidden">
+                    <div class="bg-gray-100 rounded-full px-6 py-1.5 sm:px-8 sm:py-2 mx-auto mb-5 sm:mb-6 flex items-center justify-center">
+                        <span class="text-xs sm:text-sm font-black tracking-[0.2em] text-black">WEEK 8</span>
+                    </div>
+
+                    <div class="flex-grow flex flex-col sm:flex-row gap-5 sm:gap-6 items-center">
+                        <div class="w-full max-w-[200px] sm:max-w-none sm:w-1/2 aspect-square rounded-[1.5rem] overflow-hidden shadow-lg shrink-0 cursor-pointer active:scale-[0.95] md:active:scale-100 md:transition md:hover:scale-[1.02] duration-200" onclick="openDetail(0, this)">
+                            <img src="https://chart.btm-m.site/images/week8/01.jpg" alt="Top 1" class="w-full h-full object-cover rounded-[1.5rem]">
+                        </div>
+                        
+                        <div class="w-full sm:w-1/2 flex flex-col justify-center">
+                            <h3 class="text-lg sm:text-xl md:text-2xl font-black mb-3 sm:mb-4 tracking-tight text-center sm:text-left">Weekly Top 5</h3>
+                            <ul id="top5-list" class="space-y-2.5 sm:space-y-3 text-sm sm:text-base font-bold">
+                                <!-- Top 5 数据由 JS 渲染 -->
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 榜单列表模块 -->
+            <div class="bg-white rounded-[2rem] md:rounded-[2.5rem] p-4 sm:p-8 lg:p-12 card-shadow">
+                <div id="track-list" class="flex flex-col">
+                    <!-- 完整 20 首歌曲列表将通过 JS 动态注入 -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ==================== 视图 2: 详情页 ==================== -->
+    <div id="detail-view" class="fixed inset-0 z-50 hidden opacity-0 transition-opacity duration-300 touch-none">
+        
+        <div id="detail-backdrop" class="absolute inset-0 backdrop-transition-slow" style="background-color: rgba(0,0,0,0); backdrop-filter: blur(0px); -webkit-backdrop-filter: blur(0px);"></div>
+
+        <div id="detail-wrapper" class="absolute inset-0 origin-center bg-black overflow-hidden shadow-2xl">
+            
+            <div id="detail-bg" class="absolute inset-0 bg-cover bg-center opacity-60 scale-110 transition-all duration-700" style="filter: blur(40px) brightness(0.6);"></div>
+            
+            <div class="absolute left-4 right-4 md:left-6 md:right-6 z-50 flex justify-between items-center pointer-events-none safe-top">
+                <button id="back-btn" onclick="closeDetail()" class="pointer-events-auto bg-white/20 hover:bg-white/40 active:bg-white/50 backdrop-blur-md rounded-full w-10 h-10 md:w-12 md:h-12 flex items-center justify-center text-white transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5 md:w-6 md:h-6">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                    </svg>
+                </button>
+                <div class="bg-white rounded-full px-5 py-1.5 md:px-6 md:py-2 shadow-lg pill-shadow hidden sm:block">
+                    <h1 class="text-xs md:text-sm font-black tracking-widest text-black">[ btm_m ] WEEKLY</h1>
+                </div>
+            </div>
+
+            <div class="relative z-30 h-full flex items-center justify-center p-6 md:p-12 pb-32 md:pb-40 pointer-events-none w-full" id="swipe-area">
+                <div class="relative w-full max-w-[320px] sm:max-w-sm md:max-w-md aspect-[4/5] md:aspect-[3/4] rounded-[2rem] md:rounded-[2.5rem] bg-cover bg-center detail-shadow transition-transform duration-300" id="detail-card-bg">
+                    <div class="absolute inset-0 rounded-[2rem] md:rounded-[2.5rem] glass-overlay transition-opacity duration-300"></div>
+                    <div class="absolute bottom-6 left-6 right-6 md:bottom-10 md:left-10 md:right-10 text-white">
+                        <h2 id="detail-title" class="text-2xl sm:text-3xl md:text-4xl font-bold mb-1.5 md:mb-2 tracking-tight drop-shadow-md line-clamp-2 leading-tight"></h2>
+                        <p id="detail-artist" class="text-sm sm:text-base md:text-lg text-gray-200 font-medium drop-shadow-md truncate"></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="absolute bottom-safe-position left-4 right-4 md:left-12 md:right-12 z-50 flex flex-row justify-between items-end pointer-events-none">
+                
+                <!-- 左侧：切换按钮组 + NEW 徽章 -->
+                <div class="flex flex-col gap-3 sm:gap-4 pointer-events-auto">
+                    <!-- 明确的左右切换按钮 -->
+                    <div class="flex gap-2 sm:gap-3">
+                        <button onclick="prevSong()" class="bg-white/20 hover:bg-white/40 active:bg-white/50 backdrop-blur-md rounded-full w-11 h-11 sm:w-12 sm:h-12 flex items-center justify-center text-white transition-colors shadow-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5 sm:w-6 sm:h-6">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                            </svg>
+                        </button>
+                        <button onclick="nextSong()" class="bg-white/20 hover:bg-white/40 active:bg-white/50 backdrop-blur-md rounded-full w-11 h-11 sm:w-12 sm:h-12 flex items-center justify-center text-white transition-colors shadow-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5 sm:w-6 sm:h-6">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- 排名徽章 -->
+                    <div class="bg-white text-black rounded-[1.5rem] md:rounded-3xl px-4 py-2.5 sm:px-5 sm:py-3 md:px-7 md:py-4 flex flex-col items-center shadow-2xl self-start">
+                        <span id="detail-rank" class="text-3xl sm:text-4xl md:text-5xl font-number leading-none"></span>
+                        <span class="text-[0.6rem] md:text-xs font-bold mt-1 md:mt-1.5 tracking-wider">NEW!!</span>
+                    </div>
+                </div>
+
+                <!-- 右下角 统计徽章组 -->
+                <div class="flex gap-1.5 sm:gap-2 md:gap-3 pointer-events-auto">
+                    <div class="bg-white text-black rounded-[1.2rem] md:rounded-3xl p-2.5 sm:p-3 md:px-4 md:py-3 flex flex-col items-center shadow-2xl min-w-[3.5rem] sm:min-w-[4rem] md:min-w-[4.5rem]">
+                        <span class="text-lg sm:text-xl md:text-2xl font-number leading-none">-</span>
+                        <span class="text-[0.55rem] sm:text-[0.6rem] md:text-xs font-bold mt-1 md:mt-1.5 text-gray-500 tracking-[0.1em] whitespace-nowrap transform scale-90 sm:scale-100">上周名次</span>
+                    </div>
+                    <div class="bg-white text-black rounded-[1.2rem] md:rounded-3xl p-2.5 sm:p-3 md:px-4 md:py-3 flex flex-col items-center shadow-2xl min-w-[3.5rem] sm:min-w-[4rem] md:min-w-[4.5rem]">
+                        <span class="text-lg sm:text-xl md:text-2xl font-number leading-none">01</span>
+                        <span class="text-[0.55rem] sm:text-[0.6rem] md:text-xs font-bold mt-1 md:mt-1.5 text-gray-500 tracking-[0.1em] whitespace-nowrap transform scale-90 sm:scale-100">在榜周数</span>
+                    </div>
+                    <div class="bg-white text-black rounded-[1.2rem] md:rounded-3xl p-2.5 sm:p-3 md:px-4 md:py-3 flex flex-col items-center shadow-2xl min-w-[3.5rem] sm:min-w-[4rem] md:min-w-[4.5rem]">
+                        <span id="detail-peak" class="text-lg sm:text-xl md:text-2xl font-number leading-none"></span>
+                        <span class="text-[0.55rem] sm:text-[0.6rem] md:text-xs font-bold mt-1 md:mt-1.5 text-gray-500 tracking-[0.1em] whitespace-nowrap transform scale-90 sm:scale-100">最高名次</span>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <!-- ==================== 视图 3: 实验性菜单弹窗 ==================== -->
+    <div id="experimental-menu" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-[2rem] p-8 max-w-sm w-full mx-4 shadow-2xl transform scale-95 transition-transform duration-300" id="experimental-modal">
+            <h3 class="text-2xl font-black mb-6 text-black tracking-tight">实验性菜单</h3>
+            
+            <div class="flex items-center justify-between mb-8">
+                <div class="pr-4">
+                    <div class="font-bold text-gray-800 text-lg">预测性返回动画</div>
+                    <div class="text-xs text-gray-500 mt-1 leading-relaxed">鼠标靠近返回按钮，或在屏幕竖向中部的区域向右滑动时，触发预测性返回预示。</div>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                    <input type="checkbox" id="predictive-toggle" class="sr-only peer" onchange="togglePredictive(this)">
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
+                </label>
+            </div>
+
+            <button onclick="closeExperimentalMenu()" class="w-full bg-black text-white rounded-2xl py-3.5 font-bold hover:bg-gray-800 transition shadow-lg text-lg">完成</button>
+        </div>
+    </div>
+
+    <script>
+        const tracks = [
+            { title: "Color Your Night", artist: "Lotus Juice & Azumi Takahashi" },
+            { title: "再会", artist: "Vaundy" },
+            { title: "怪獣の花唄 - replica -", artist: "Vaundy" },
+            { title: "シリーテラー (feat. IA)", artist: "r-906" },
+            { title: "愛迷エレジー (Reloaded)", artist: "DECO27" },
+            { title: "偉生人", artist: "Vaundy" },
+            { title: "DUET", artist: "ZICO & Lilas Ikuta" },
+            { title: "ブループラネット", artist: "DECO*27" }, 
+            { title: "会心の一撃", artist: "RADWIMPS" },
+            { title: "ずっとラブソング", artist: "Vaundy" },
+            { title: "スローダウン", artist: "MILGRAM シドウ (CV: 仲村宗悟)" },
+            { title: "罪と罰 (Reloaded)", artist: "DECO27" },
+            { title: "前前前世", artist: "Vaundy" },
+            { title: "UNFORGIVEN -Japanese Ver.-", artist: "LE SSERAFIM (feat. Nile Rodgers & Ado)" },
+            { title: "HOME", artist: "DECO*27 / 40mP" },
+            { title: "惑星ループ", artist: "Eve" },
+            { title: "Almond Chocolate", artist: "ILLIT" },
+            { title: "最大公約数", artist: "SEKAI NO OWARI" },
+            { title: "25コ目の染色体", artist: "RADWIMPS" },
+            { title: "タイムパラドックス", artist: "Vaundy" }
+        ];
+
+        let currentIndex = 0; 
+        let activeSourceElement = null; 
+        let activeSourceIndex = -1;     
+        let predictiveBackEnabled = false;
+
+        function initRender() {
+            const top5List = document.getElementById('top5-list');
+            tracks.slice(0, 5).forEach((track, index) => {
+                const rank = String(index + 1).padStart(2, '0');
+                top5List.innerHTML += `
+                    <li class="flex items-center cursor-pointer hover:opacity-70 active:opacity-50 transition-opacity p-1 -mx-1" onclick="openDetail(${index}, this)">
+                        <span class="font-number text-base sm:text-lg mr-2 sm:mr-3 w-5 sm:w-6">${rank}</span>
+                        <span class="truncate pr-2 title-text">${track.title}</span>
+                    </li>
+                `;
+            });
+
+            const listContainer = document.getElementById('track-list');
+            tracks.forEach((track, index) => {
+                const rank = String(index + 1).padStart(2, '0');
+                const imageUrl = `https://chart.btm-m.site/images/week8/${rank}.jpg`;
+                const borderClass = index === tracks.length - 1 ? '' : 'border-b border-gray-100';
+
+                listContainer.innerHTML += `
+                    <div id="track-item-${index}" class="flex items-center py-3.5 sm:py-5 ${borderClass} hover:bg-gray-50 active:bg-gray-100 transition-all duration-200 rounded-2xl px-2 sm:px-4 -mx-2 sm:-mx-4 group cursor-pointer active:scale-[0.98]" onclick="openDetail(${index}, this)">
+                        <div class="w-10 sm:w-16 text-center text-3xl sm:text-5xl font-number mr-3 sm:mr-6 text-black tracking-tighter transition-transform group-hover:scale-110">
+                            ${rank}
+                        </div>
+                        <img src="${imageUrl}" 
+                             alt="${track.title} Cover" 
+                             class="w-10 h-10 sm:w-14 sm:h-14 rounded-lg object-cover shadow-sm mr-3 sm:mr-6 bg-gray-100 border border-black/5 flex-shrink-0 transition-transform group-hover:scale-105"
+                             onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'100\\' height=\\'100\\'><rect width=\\'100\\' height=\\'100\\' fill=\\'%23f3f4f6\\'/></svg>'">
+                        <div class="flex flex-col flex-grow min-w-0 justify-center">
+                            <div class="text-base sm:text-xl font-bold text-black leading-tight truncate title-text">
+                                ${track.title}
+                            </div>
+                            <div class="text-xs sm:text-base text-gray-400 mt-0.5 sm:mt-1 font-medium truncate artist-text">
+                                ${track.artist}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function updateDetailContent() {
+            const track = tracks[currentIndex];
+            const rankStr = String(currentIndex + 1).padStart(2, '0');
+            const imgUrl = `https://chart.btm-m.site/images/week8/${rankStr}.jpg`;
+
+            document.getElementById('detail-bg').style.backgroundImage = `url('${imgUrl}')`;
+            document.getElementById('detail-card-bg').style.backgroundImage = `url('${imgUrl}')`;
+            document.getElementById('detail-title').innerText = track.title;
+            document.getElementById('detail-artist').innerText = track.artist;
+            document.getElementById('detail-rank').innerText = rankStr;
+            document.getElementById('detail-peak').innerText = rankStr;
+        }
+
+        function openDetail(index, element = null) {
+            currentIndex = index;
+            activeSourceElement = element;
+            activeSourceIndex = index;
+            const detailView = document.getElementById('detail-view');
+            const backdrop = document.getElementById('detail-backdrop');
+
+            const performUpdate = () => {
+                updateDetailContent();
+                document.body.style.overflow = 'hidden'; 
+                detailView.classList.remove('hidden');
+                
+                backdrop.classList.remove('backdrop-transition-fast');
+                backdrop.classList.add('backdrop-transition-slow');
+                
+                requestAnimationFrame(() => {
+                    detailView.classList.remove('opacity-0');
+                    backdrop.style.backgroundColor = 'rgba(0, 0, 0, 0.6)';
+                    backdrop.style.backdropFilter = 'blur(15px)';
+                    backdrop.style.webkitBackdropFilter = 'blur(15px)';
+                });
+            };
+
+            if (document.startViewTransition) {
+                let sourceImg = element ? element.querySelector('img') : null;
+                let sourceTitle = element ? element.querySelector('.title-text') : null;
+                let sourceArtist = element ? element.querySelector('.artist-text') : null;
+
+                if(sourceImg) sourceImg.style.viewTransitionName = 'morph-img';
+                if(sourceTitle) sourceTitle.style.viewTransitionName = 'morph-title';
+                if(sourceArtist) sourceArtist.style.viewTransitionName = 'morph-artist';
+
+                const transition = document.startViewTransition(() => {
+                    if(sourceImg) sourceImg.style.viewTransitionName = '';
+                    if(sourceTitle) sourceTitle.style.viewTransitionName = '';
+                    if(sourceArtist) sourceArtist.style.viewTransitionName = '';
+
+                    document.getElementById('detail-card-bg').style.viewTransitionName = 'morph-img';
+                    document.getElementById('detail-title').style.viewTransitionName = 'morph-title';
+                    document.getElementById('detail-artist').style.viewTransitionName = 'morph-artist';
+
+                    performUpdate();
+                });
+                
+                transition.finished.then(() => {
+                    document.getElementById('detail-card-bg').style.viewTransitionName = '';
+                    document.getElementById('detail-title').style.viewTransitionName = '';
+                    document.getElementById('detail-artist').style.viewTransitionName = '';
+                });
+            } else {
+                performUpdate();
+            }
+        }
+
+        function closeDetail() {
+            const detailView = document.getElementById('detail-view');
+            const backdrop = document.getElementById('detail-backdrop');
+            const wrapper = document.getElementById('detail-wrapper');
+
+            backdrop.classList.remove('backdrop-transition-fast');
+            backdrop.classList.add('backdrop-transition-slow');
+            backdrop.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+            backdrop.style.backdropFilter = 'blur(0px)';
+            backdrop.style.webkitBackdropFilter = 'blur(0px)';
+
+            const performUpdate = () => {
+                detailView.classList.add('hidden');
+                document.body.style.overflow = ''; 
+
+                // 在截取了旧状态的视图快照之后再重置内部样式，这样无缝动画起点就是准确缩小的残影位置
+                wrapper.style.transform = `scale(1) translateX(0)`;
+                wrapper.style.borderRadius = `0`;
+            };
+
+            if (document.startViewTransition) {
+                document.getElementById('detail-card-bg').style.viewTransitionName = 'morph-img';
+                document.getElementById('detail-title').style.viewTransitionName = 'morph-title';
+                document.getElementById('detail-artist').style.viewTransitionName = 'morph-artist';
+
+                const transition = document.startViewTransition(() => {
+                    document.getElementById('detail-card-bg').style.viewTransitionName = '';
+                    document.getElementById('detail-title').style.viewTransitionName = '';
+                    document.getElementById('detail-artist').style.viewTransitionName = '';
+
+                    const targetElement = (currentIndex === activeSourceIndex && activeSourceElement) 
+                        ? activeSourceElement 
+                        : document.getElementById(`track-item-${currentIndex}`);
+                        
+                    let targetImg = targetElement ? targetElement.querySelector('img') : null;
+                    let targetTitle = targetElement ? targetElement.querySelector('.title-text') : null;
+                    let targetArtist = targetElement ? targetElement.querySelector('.artist-text') : null;
+
+                    if(targetImg) targetImg.style.viewTransitionName = 'morph-img';
+                    if(targetTitle) targetTitle.style.viewTransitionName = 'morph-title';
+                    if(targetArtist) targetArtist.style.viewTransitionName = 'morph-artist';
+
+                    performUpdate();
+                });
+
+                transition.finished.then(() => {
+                    const targetElement = (currentIndex === activeSourceIndex && activeSourceElement) 
+                        ? activeSourceElement 
+                        : document.getElementById(`track-item-${currentIndex}`);
+                    let targetImg = targetElement ? targetElement.querySelector('img') : null;
+                    let targetTitle = targetElement ? targetElement.querySelector('.title-text') : null;
+                    let targetArtist = targetElement ? targetElement.querySelector('.artist-text') : null;
+
+                    if(targetImg) targetImg.style.viewTransitionName = '';
+                    if(targetTitle) targetTitle.style.viewTransitionName = '';
+                    if(targetArtist) targetArtist.style.viewTransitionName = '';
+                });
+            } else {
+                detailView.classList.add('opacity-0');
+                setTimeout(() => {
+                    performUpdate();
+                }, 300);
+            }
+        }
+
+        function prevSong() {
+            const update = () => {
+                if (currentIndex > 0) currentIndex--;
+                else currentIndex = tracks.length - 1;
+                updateDetailContent();
+            };
+            if (document.startViewTransition) document.startViewTransition(update);
+            else update();
+        }
+
+        function nextSong() {
+            const update = () => {
+                if (currentIndex < tracks.length - 1) currentIndex++;
+                else currentIndex = 0;
+                updateDetailContent();
+            };
+            if (document.startViewTransition) document.startViewTransition(update);
+            else update();
+        }
+
+        // 桌面端：鼠标移动预测性返回动画
+        document.addEventListener('mousemove', (e) => {
+            const detailView = document.getElementById('detail-view');
+            if (!predictiveBackEnabled || detailView.classList.contains('hidden')) return;
+
+            const btn = document.getElementById('back-btn');
+            const wrapper = document.getElementById('detail-wrapper');
+            const backdrop = document.getElementById('detail-backdrop');
+            if (!btn || !wrapper || !backdrop) return;
+
+            const rect = btn.getBoundingClientRect();
+            const btnX = rect.left + rect.width / 2;
+            const btnY = rect.top + rect.height / 2;
+
+            const dist = Math.hypot(e.clientX - btnX, e.clientY - btnY);
+            const maxDist = 120; 
+
+            if (dist < maxDist) {
+                backdrop.classList.remove('backdrop-transition-slow');
+                backdrop.classList.add('backdrop-transition-fast');
+
+                const progress = 1 - (dist / maxDist);
+                const easeProgress = Math.pow(progress, 1.5); 
+                
+                const scale = 1 - (0.15 * easeProgress); 
+                const borderRadius = 2.5 * easeProgress; 
+
+                wrapper.style.transform = `scale(${scale})`;
+                wrapper.style.borderRadius = `${borderRadius}rem`;
+
+                const currentAlpha = 0.6 * (1 - easeProgress);
+                const currentBlur = 15 * (1 - easeProgress);
+                backdrop.style.backgroundColor = `rgba(0, 0, 0, ${currentAlpha})`;
+                backdrop.style.backdropFilter = `blur(${currentBlur}px)`;
+                backdrop.style.webkitBackdropFilter = `blur(${currentBlur}px)`;
+            } else {
+                if (wrapper.style.transform !== 'scale(1)') {
+                    backdrop.classList.remove('backdrop-transition-slow');
+                    backdrop.classList.add('backdrop-transition-fast');
+
+                    wrapper.style.transform = `scale(1)`;
+                    wrapper.style.borderRadius = `0`;
+                    
+                    backdrop.style.backgroundColor = 'rgba(0, 0, 0, 0.6)';
+                    backdrop.style.backdropFilter = 'blur(15px)';
+                    backdrop.style.webkitBackdropFilter = 'blur(15px)';
+                }
+            }
+        });
+
+        let clickCount = 0;
+        let clickTimer = null;
+
+        document.getElementById('secret-trigger').addEventListener('click', () => {
+            clickCount++;
+            if (clickTimer) clearTimeout(clickTimer);
+            clickTimer = setTimeout(() => { clickCount = 0; }, 2000); 
+
+            if (clickCount >= 5) {
+                openExperimentalMenu();
+                clickCount = 0;
+            }
+        });
+
+        function openExperimentalMenu() {
+            const menu = document.getElementById('experimental-menu');
+            const modal = document.getElementById('experimental-modal');
+            menu.classList.remove('hidden');
+            menu.classList.add('flex');
+            void menu.offsetWidth; 
+            menu.classList.remove('opacity-0');
+            modal.classList.remove('scale-95');
+            modal.classList.add('scale-100');
+        }
+
+        function closeExperimentalMenu() {
+            const menu = document.getElementById('experimental-menu');
+            const modal = document.getElementById('experimental-modal');
+            menu.classList.add('opacity-0');
+            modal.classList.remove('scale-100');
+            modal.classList.add('scale-95');
+            setTimeout(() => {
+                menu.classList.add('hidden');
+                menu.classList.remove('flex');
+            }, 300);
+        }
+
+        function togglePredictive(checkbox) {
+            predictiveBackEnabled = checkbox.checked;
+        }
+
+        // ================= 移动端中部向右滑动预测性返回逻辑 =================
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let isPredictiveSwiping = false;
+        let gestureDetermined = false;
+
+        const detailViewNode = document.getElementById('detail-view');
+        const wrapperNode = document.getElementById('detail-wrapper');
+        const backdropNode = document.getElementById('detail-backdrop');
+
+        detailViewNode.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+            touchStartY = e.changedTouches[0].screenY;
+            isPredictiveSwiping = false;
+            gestureDetermined = false;
+        }, { passive: true });
+
+        detailViewNode.addEventListener('touchmove', e => {
+            if (!predictiveBackEnabled) return;
+
+            const currentX = e.changedTouches[0].screenX;
+            const currentY = e.changedTouches[0].screenY;
+            const diffX = currentX - touchStartX;
+            const diffY = currentY - touchStartY;
+
+            if (!gestureDetermined) {
+                // 滑动超过 10px 开始判定意图
+                if (Math.abs(diffX) > 10 || Math.abs(diffY) > 10) {
+                    gestureDetermined = true;
+                    // 判断起点是否在屏幕竖向中部 (约 15% ~ 85% 区域)
+                    const windowHeight = window.innerHeight;
+                    const inVerticalMiddle = touchStartY > windowHeight * 0.15 && touchStartY < windowHeight * 0.85;
+
+                    // 向右滑动为主，且起点在中部区域
+                    if (diffX > 10 && Math.abs(diffX) > Math.abs(diffY) && inVerticalMiddle) {
+                        isPredictiveSwiping = true;
+                        wrapperNode.style.transition = 'none'; 
+                        backdropNode.classList.remove('backdrop-transition-slow');
+                        backdropNode.classList.add('backdrop-transition-fast');
+                    }
+                }
+            }
+            
+            if (!isPredictiveSwiping) return;
+            
+            if (diffX < 0) return; // 预测性返回只响应向右拖拽
+            
+            const maxDrag = window.innerWidth;
+            let progress = diffX / maxDrag;
+            if (progress < 0) progress = 0;
+            if (progress > 1) progress = 1;
+
+            const easeProgress = Math.pow(progress, 0.8); 
+            const scale = 1 - (0.15 * easeProgress); 
+            const borderRadius = 2.5 * easeProgress; 
+
+            wrapperNode.style.transform = `scale(${scale}) translateX(${diffX * 0.3}px)`;
+            wrapperNode.style.borderRadius = `${borderRadius}rem`;
+
+            const currentAlpha = 0.6 * (1 - easeProgress);
+            const currentBlur = 15 * (1 - easeProgress);
+            backdropNode.style.backgroundColor = `rgba(0, 0, 0, ${currentAlpha})`;
+            backdropNode.style.backdropFilter = `blur(${currentBlur}px)`;
+            backdropNode.style.webkitBackdropFilter = `blur(${currentBlur}px)`;
+        }, { passive: true });
+
+        detailViewNode.addEventListener('touchend', e => {
+            if (!isPredictiveSwiping) return;
+            
+            isPredictiveSwiping = false;
+            const touchEndX = e.changedTouches[0].screenX;
+            const diffX = touchEndX - touchStartX;
+            
+            // 恢复平滑回弹的过渡效果
+            wrapperNode.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), border-radius 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)';
+            const closeThreshold = window.innerWidth * 0.25 > 100 ? 100 : window.innerWidth * 0.25;
+
+            if (diffX > closeThreshold) {
+                // 将残留的形变样式保留给 View Transitions 捕获
+                wrapperNode.style.transition = 'none';
+                closeDetail();
+            } else {
+                // 没有达到返回阈值，弹簧回位
+                wrapperNode.style.transform = `scale(1) translateX(0)`;
+                wrapperNode.style.borderRadius = `0`;
+                backdropNode.style.backgroundColor = 'rgba(0, 0, 0, 0.6)';
+                backdropNode.style.backdropFilter = 'blur(15px)';
+                backdropNode.style.webkitBackdropFilter = 'blur(15px)';
+            }
+        }, { passive: true });
+
+        // 启动应用
+        initRender();
+    </script>
+</body>
+</html>
